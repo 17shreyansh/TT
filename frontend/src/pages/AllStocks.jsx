@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Box, Typography, Card, CardContent, TextField, InputAdornment, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel } from '@mui/material';
+import { Box, Typography, Card, CardContent, TextField, InputAdornment, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel, TablePagination } from '@mui/material';
 import { Search, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import useStore from '../store/useStore';
@@ -11,6 +11,8 @@ export default function AllStocks() {
   const [search, setSearch] = useState('');
   const [orderBy, setOrderBy] = useState('signalScore');
   const [order, setOrder] = useState('desc');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
 
   const handleSort = (property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -117,7 +119,7 @@ export default function AllStocks() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredAndSortedData.map((stock) => (
+            {filteredAndSortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((stock) => (
               <TableRow 
                 key={stock.symbol} 
                 hover
@@ -153,6 +155,18 @@ export default function AllStocks() {
             )}
           </TableBody>
         </Table>
+        <TablePagination
+          rowsPerPageOptions={[10, 25, 50, 100]}
+          component="div"
+          count={filteredAndSortedData.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={(e, newPage) => setPage(newPage)}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
+        />
       </TableContainer>
     </Box>
   );

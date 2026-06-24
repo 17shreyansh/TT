@@ -37,6 +37,9 @@ async function init(universe) {
       token: item.token,
       ltp: 0, 
       open: 0,
+      high: 0,
+      low: 0,
+      prevClose: 0,
       changePercent: 0,
       volume: 0,
       sma200: 0,
@@ -208,17 +211,36 @@ function processTick(tickData) {
   }  
   if (!newLtp) return;
 
-  // Angel API WebSocket ALWAYS returns LTP in paise for equities.
-  // We unconditionally divide by 100 to get INR.
-  if (newLtp) {
-    newLtp = newLtp / 100;
-  }
+  // Quote mode payload uses these fields
+  let newOpen = tickData.open_price_day || tickData.openPriceDay;
+  let newHigh = tickData.high_price_day || tickData.highPriceDay;
+  let newLow = tickData.low_price_day || tickData.lowPriceDay;
+  let newClose = tickData.close_price || tickData.closePrice;
+  let newVolume = tickData.vol_traded || tickData.volume;
 
-  if (newLtp === state.ltp) return; // No change
+  // Angel API WebSocket ALWAYS returns prices in paise for equities.
+  // We unconditionally divide by 100 to get INR.
+  if (newLtp) newLtp = newLtp / 100;
+  if (newOpen) newOpen = newOpen / 100;
+  if (newHigh) newHigh = newHigh / 100;
+  if (newLow) newLow = newLow / 100;
+  if (newClose) newClose = newClose / 100;
+
+  if (newLtp === state.ltp && newVolume === state.volume) return; // No change
 
   // Update State
   state.ltp = parseFloat(newLtp);
-  state.changePercent = ((state.ltp - state.open) / state.open) * 100;
+  if (newOpen) state.open = parseFloat(newOpen);
+  if (newHigh) state.high = parseFloat(newHigh);
+  if (newLow) state.low = parseFloat(newLow);
+  if (newClose) state.prevClose = parseFloat(newClose);
+  if (newVolume) state.volume = parseFloat(newVolume);
+  
+  if (state.prevClose > 0) {
+    state.changePercent = ((state.ltp - state.prevClose) / state.prevClose) * 100;
+  } else if (state.open > 0) {
+    state.changePercent = ((state.ltp - state.open) / state.open) * 100;
+  }
   
   // Run Strategy
   const newSignal = strategy.calculate(state);

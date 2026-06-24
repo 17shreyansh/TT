@@ -8,7 +8,7 @@ try {
   // fallback
 }
 const ACTION = constants ? constants.ACTION : { Subscribe: 1 };
-const MODE = constants ? constants.MODE : { LTP: 1 };
+const MODE = constants ? constants.MODE : { LTP: 1, Quote: 2 };
 const EXCHANGES = constants ? constants.EXCHANGES : { nse_cm: 1, bse_cm: 3 };
 
 require('dotenv').config();
@@ -78,7 +78,7 @@ function connectWebSocket(universe, onTick) {
         webSocket.fetchData({
           correlationID: `${prefix}_${i}`,
           action: ACTION.Subscribe,
-          mode: MODE.LTP,
+          mode: MODE.Quote,
           exchangeType: exchangeType,
           tokens: chunk
         });
