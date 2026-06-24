@@ -180,8 +180,13 @@ function emitMarketState() {
   emitSectorUpdate(sectorCalculator.getSectors());
 }
 
+function getMarketState() {
+  return Array.from(marketState.values());
+}
+
 module.exports = {
   init,
   processTick,
-  clear
+  clear,
+  getMarketState
 };

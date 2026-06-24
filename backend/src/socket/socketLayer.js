@@ -5,8 +5,33 @@ function initSocket(io) {
   io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
     
-    // Optionally emit initial state upon connection
-    // socket.emit('engine_update', engineController.getStatus());
+    // Lazy load to avoid circular dependencies at top level
+    const engineController = require('../engine/engineController');
+    const marketDataService = require('../services/marketDataService');
+    const sectorCalculator = require('../services/sectorCalculator');
+    
+    // Emit initial state upon connection
+    const status = engineController.getStatus();
+    socket.emit('engine_update', status);
+    
+    if (status === 'RUNNING') {
+      const state = marketDataService.getMarketState();
+      socket.emit('market_update', state);
+      socket.emit('sector_update', sectorCalculator.getSectors());
+      
+      state.forEach(s => {
+        if (s.signal !== 'NONE') {
+          socket.emit('signal_update', {
+            symbol: s.symbol,
+            sector: s.sector,
+            signal: s.signal,
+            price: s.ltp,
+            changePercent: s.changePercent,
+            time: s.signalTime
+          });
+        }
+      });
+    }
     
     socket.on('disconnect', () => {
       console.log('Client disconnected:', socket.id);
