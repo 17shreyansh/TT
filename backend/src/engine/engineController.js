@@ -14,9 +14,32 @@ async function start() {
     // 1. Connect to SmartAPI
     await smartApiService.login();
     
-    // 2. Load Universe
-    const universePath = path.join(__dirname, '../../config/universe.json');
-    const universe = JSON.parse(fs.readFileSync(universePath, 'utf8'));
+    // 2. Load Universe Dynamically from Angel API
+    const https = require('https');
+    console.log('Fetching live universe from Angel API...');
+    const universe = await new Promise((resolve, reject) => {
+      https.get('https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json', (res) => {
+        let data = '';
+        res.on('data', chunk => { data += chunk; });
+        res.on('end', () => {
+          try {
+            const fullList = JSON.parse(data);
+            const nseEquities = fullList
+              .filter(item => item.exch_seg === 'NSE' && item.symbol.endsWith('-EQ'))
+              .map(item => ({
+                symbol: item.symbol,
+                token: item.token,
+                sector: 'EQUITY', // OpenAPI doesn't provide sectors natively
+                exchange: 'NSE'
+              }));
+            console.log(`Successfully fetched ${nseEquities.length} active NSE equity tokens.`);
+            resolve(nseEquities);
+          } catch (err) {
+            reject(err);
+          }
+        });
+      }).on('error', reject);
+    });
     
     // 3. Initialize Market Data Service
     await marketDataService.init(universe);

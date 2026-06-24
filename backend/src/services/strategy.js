@@ -11,6 +11,10 @@
 function calculate(stockData) {
   const { ltp, sma200, r4, s4 } = stockData;
 
+  if (sma200 === 0 || r4 === 0 || s4 === 0 || ltp === 0) {
+    return 'NONE';
+  }
+
   if (ltp > sma200 && ltp > r4) {
     return 'BUY';
   }
