@@ -8,6 +8,7 @@ const drawerWidth = 240;
 
 const menuItems = [
   { text: 'Dashboard', icon: <Activity size={20} />, path: '/' },
+  { text: 'Market Screener', icon: <ListIcon size={20} />, path: '/stocks' },
   { text: 'Sector Strength', icon: <Layers size={20} />, path: '/sectors' },
   { text: 'Active Signals', icon: <Target size={20} />, path: '/signals' },
   { text: 'Settings', icon: <Settings size={20} />, path: '/settings' },

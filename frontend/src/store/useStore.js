@@ -11,14 +11,9 @@ const useStore = create((set, get) => ({
   setSectors: (data) => set({ sectors: data }),
   
   addSignal: (signalData) => set((state) => {
-    // Keep only the latest signal per symbol, or add new
-    const existingIndex = state.signals.findIndex(s => s.symbol === signalData.symbol);
-    let newSignals = [...state.signals];
-    if (existingIndex >= 0) {
-      newSignals[existingIndex] = signalData;
-    } else {
-      newSignals.unshift(signalData); // Add to front
-    }
+    // Keep history of signals. Just unshift to the front.
+    // Keep a maximum of 5000 signals in memory to prevent memory leaks.
+    const newSignals = [signalData, ...state.signals].slice(0, 5000);
     return { signals: newSignals };
   }),
   

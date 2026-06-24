@@ -10,6 +10,8 @@ import SectorStrength from './pages/SectorStrength';
 import SectorDetails from './pages/SectorDetails';
 import Signals from './pages/Signals';
 import Settings from './pages/Settings';
+import AllStocks from './pages/AllStocks';
+import StockDetails from './pages/StockDetails';
 
 function App() {
   // Initialize WebSocket connection
@@ -24,6 +26,8 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/sectors" element={<SectorStrength />} />
             <Route path="/sectors/:name" element={<SectorDetails />} />
+            <Route path="/stocks" element={<AllStocks />} />
+            <Route path="/stocks/:symbol" element={<StockDetails />} />
             <Route path="/signals" element={<Signals />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
