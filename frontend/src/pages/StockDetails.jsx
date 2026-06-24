@@ -108,10 +108,6 @@ export default function StockDetails() {
         }
         historicalLoaded.current = true;
       }
-          lastCandleRef.current = validData[validData.length - 1];
-        }
-        historicalLoaded.current = true;
-      }
     });
     return () => { active = false; };
   }, [symbol]);
