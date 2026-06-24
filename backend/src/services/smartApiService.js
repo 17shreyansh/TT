@@ -3,6 +3,7 @@ require('dotenv').config();
 
 let smartApi = null;
 let webSocket = null;
+let feedToken = null;
 
 async function login() {
   const { ANGEL_API_KEY, ANGEL_CLIENT_CODE, ANGEL_PASSWORD, ANGEL_TOTP_SECRET } = process.env;
@@ -25,6 +26,13 @@ async function login() {
     const totp = '123456'; 
 
     const session = await smartApi.generateSession(ANGEL_CLIENT_CODE, ANGEL_PASSWORD, totp);
+    
+    if (session && session.data && session.data.feedToken) {
+      feedToken = session.data.feedToken;
+    } else if (session && session.feedToken) {
+      feedToken = session.feedToken;
+    }
+
     console.log('SmartAPI Login Success:', session.message);
   } catch (error) {
     console.error('SmartAPI Login Failed:', error);
@@ -36,7 +44,6 @@ function connectWebSocket(universe, onTick) {
   if (!smartApi) return;
 
   const { ANGEL_CLIENT_CODE } = process.env;
-  const feedToken = smartApi.getfeedToken();
 
   webSocket = new WebSocketV2({
     jwttoken: smartApi.access_token,
