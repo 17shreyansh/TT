@@ -179,10 +179,17 @@ function processTick(tickData) {
 
   const state = marketState.get(token);
   
-  // SmartAPI LTP usually comes in paise, or sometimes float. We'll handle a direct float for simplicity here.
-  // If real API is returning paise, it needs `ltp = tickData.last_traded_price / 100`
-  const newLtp = tickData.last_traded_price || tickData.ltp || state.ltp;
+  // SmartAPI V2 parsed payload uses lastTradedPrice
+  let newLtp = tickData.lastTradedPrice || tickData.last_traded_price || tickData.ltp || tickData.LTP;
   
+  if (!newLtp) return;
+
+  // Sometimes Angel API returns LTP in paise (integer). If it's completely massive compared to open price, we adjust it.
+  // E.g. open is 200, LTP comes in as 20000.
+  if (state.open > 0 && newLtp > state.open * 50) {
+    newLtp = newLtp / 100;
+  }
+
   if (newLtp === state.ltp) return; // No change
 
   // Update State

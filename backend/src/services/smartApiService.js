@@ -1,4 +1,16 @@
 const { SmartAPI, WebSocketV2 } = require('smartapi-javascript');
+// Depending on smartapi-javascript version, constants might be exported directly or under specific objects
+// We will require them from the config directly if needed, but they are usually exported by the main package.
+let constants;
+try {
+  constants = require('smartapi-javascript/config/constant');
+} catch (e) {
+  // fallback
+}
+const ACTION = constants ? constants.ACTION : { Subscribe: 1 };
+const MODE = constants ? constants.MODE : { LTP: 1 };
+const EXCHANGES = constants ? constants.EXCHANGES : { nse_cm: 1, bse_cm: 3 };
+
 require('dotenv').config();
 
 let smartApi = null;
@@ -55,33 +67,32 @@ function connectWebSocket(universe, onTick) {
   webSocket.connect().then(() => {
     console.log('SmartAPI WebSocket Connected');
     
-    // Prepare token list for subscription
-    // mode 1 = LTP, action 1 = Subscribe, exchangeType 1 = nse_cm, 3 = bse_cm
-    
     const nseTokens = universe.filter(i => i.exchange === 'NSE').map(i => String(i.token));
     const bseTokens = universe.filter(i => i.exchange === 'BSE').map(i => String(i.token));
 
     const CHUNK_SIZE = 50;
 
-    const subscribeTokens = (tokens, exchangeType, prefix) => {
+    const subscribeTokens = async (tokens, exchangeType, prefix) => {
       for (let i = 0; i < tokens.length; i += CHUNK_SIZE) {
         const chunk = tokens.slice(i, i + CHUNK_SIZE);
         webSocket.fetchData({
           correlationID: `${prefix}_${i}`,
-          action: 1,
-          mode: 1, // 1 = LTP
-          exchangeType: exchangeType, // 1 = NSE, 3 = BSE
+          action: ACTION.Subscribe,
+          mode: MODE.LTP,
+          exchangeType: exchangeType,
           tokens: chunk
         });
+        // Wait 200ms between subscriptions to avoid AngelOne WebSocket rate limits
+        await new Promise(r => setTimeout(r, 200));
       }
     };
 
     if (nseTokens.length > 0) {
-      subscribeTokens(nseTokens, 1, 'scanner_dashboard_nse');
+      subscribeTokens(nseTokens, EXCHANGES.nse_cm, 'scanner_dashboard_nse').catch(console.error);
     }
 
     if (bseTokens.length > 0) {
-      subscribeTokens(bseTokens, 3, 'scanner_dashboard_bse');
+      subscribeTokens(bseTokens, EXCHANGES.bse_cm, 'scanner_dashboard_bse').catch(console.error);
     }
   });
 
