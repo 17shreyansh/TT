@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, Card, CardContent, Grid, Chip, IconButton } from '@mui/material';
 import { ArrowLeft, TrendingUp, TrendingDown, Activity, Minus } from 'lucide-react';
-import { createChart, CandlestickSeries } from 'lightweight-charts';
+import { createChart } from 'lightweight-charts';
 import useStore from '../store/useStore';
 import { getHistoricalData } from '../api';
 
@@ -55,7 +55,7 @@ export default function StockDetails() {
       }
     });
 
-    seriesInstance.current = chartInstance.current.addSeries(CandlestickSeries, {
+    seriesInstance.current = chartInstance.current.addCandlestickSeries({
       upColor: '#00e676',
       downColor: '#ff1744',
       borderVisible: false,
@@ -93,9 +93,21 @@ export default function StockDetails() {
     
     getHistoricalData(symbol).then(res => {
       if (active && res.success && res.data && seriesInstance.current) {
-        const validData = [...res.data].sort((a, b) => a.time - b.time);
-        seriesInstance.current.setData(validData);
-        if (validData.length > 0) {
+        // Sort and strictly deduplicate times to prevent lightweight-charts from crashing
+        const validData = [...res.data]
+          .sort((a, b) => a.time - b.time)
+          .filter((item, index, arr) => index === 0 || item.time !== arr[index - 1].time);
+
+        try {
+          seriesInstance.current.setData(validData);
+          if (validData.length > 0) {
+            lastCandleRef.current = validData[validData.length - 1];
+          }
+        } catch (e) {
+          console.error('Chart SetData Error:', e);
+        }
+        historicalLoaded.current = true;
+      }
           lastCandleRef.current = validData[validData.length - 1];
         }
         historicalLoaded.current = true;
@@ -135,7 +147,11 @@ export default function StockDetails() {
           newCandle.low = Math.min(newCandle.low, stock.ltp);
           newCandle.close = stock.ltp;
           lastCandleRef.current = newCandle;
-          seriesInstance.current.update(newCandle);
+          try {
+            seriesInstance.current.update(newCandle);
+          } catch (e) {
+            console.error('Chart Update Error:', e);
+          }
         }
       }
 
@@ -173,9 +189,8 @@ export default function StockDetails() {
     // Filter global signals for this specific stock
     const stockSignals = globalSignals.filter(s => s.symbol === symbol || s.symbol === `${symbol}-EQ`);
     
-    // Convert to lightweight-charts marker format
+    // Convert to lightweight-charts marker format and strictly deduplicate by time
     const markers = stockSignals
-      .sort((a, b) => new Date(a.time) - new Date(b.time))
       .map(sig => ({
         time: Math.floor(new Date(sig.time).getTime() / 1000),
         position: sig.signal === 'BUY' ? 'belowBar' : 'aboveBar',
@@ -183,10 +198,16 @@ export default function StockDetails() {
         shape: sig.signal === 'BUY' ? 'arrowUp' : 'arrowDown',
         text: sig.signal === 'BUY' ? 'BUY' : 'SELL',
         size: 2
-      }));
+      }))
+      .sort((a, b) => a.time - b.time)
+      .filter((marker, index, arr) => index === 0 || marker.time !== arr[index - 1].time);
 
     // Lightweight charts handles setting all markers at once efficiently
-    seriesInstance.current.setMarkers(markers);
+    try {
+      seriesInstance.current.setMarkers(markers);
+    } catch (e) {
+      console.error('Chart SetMarkers Error:', e);
+    }
   }, [globalSignals, symbol]);
 
   if (!stock) {
