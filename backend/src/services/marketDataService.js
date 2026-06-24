@@ -15,6 +15,7 @@ function formatAngelDate(date) {
 async function init(universe) {
   universeMap.clear();
   marketState.clear();
+  sectorCalculator.init(universe);
 
   const now = new Date();
   const dailyToDateStr = formatAngelDate(now);

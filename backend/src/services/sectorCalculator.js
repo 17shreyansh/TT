@@ -2,6 +2,33 @@
 // sectorName -> { totalStocks: N, activeSignals: M, sumChangePercent: X, stocks: Map(token -> stockData) }
 let sectorMap = new Map();
 
+function init(universe) {
+  sectorMap.clear();
+  if (!universe) return;
+
+  universe.forEach(item => {
+    if (!item.sector) return;
+
+    if (!sectorMap.has(item.sector)) {
+      sectorMap.set(item.sector, {
+        name: item.sector,
+        stocks: new Map()
+      });
+    }
+
+    const sectorData = sectorMap.get(item.sector);
+    // Pre-initialize stock with 0 movement so it counts towards totalStocks
+    if (!sectorData.stocks.has(item.token)) {
+      sectorData.stocks.set(item.token, {
+        sector: item.sector,
+        token: item.token,
+        changePercent: 0,
+        signal: null
+      });
+    }
+  });
+}
+
 function updateSector(stockData) {
   const { sector, token, changePercent, signal } = stockData;
   if (!sector) return;
@@ -53,6 +80,7 @@ function clear() {
 }
 
 module.exports = {
+  init,
   updateSector,
   getSectors,
   clear
