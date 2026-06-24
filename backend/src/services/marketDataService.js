@@ -56,7 +56,8 @@ async function init(universe) {
 }
 
 async function fetchHistoricalDataInBackground(universe, dailyFromDateStr, dailyToDateStr, min15FromDateStr) {
-  const cacheDir = path.join(__dirname, '../../cache');
+  const os = require('os');
+  const cacheDir = path.join(os.tmpdir(), 'tt-algo-cache');
   if (!fs.existsSync(cacheDir)) {
     fs.mkdirSync(cacheDir, { recursive: true });
   }
