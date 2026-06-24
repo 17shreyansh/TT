@@ -3,7 +3,17 @@ import { io } from 'socket.io-client';
 import useStore from '../store/useStore';
 import { getEngineStatus } from '../api';
 
-const SOCKET_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5006';
+const getBaseUrl = () => {
+  const envUrl = import.meta.env.VITE_BACKEND_URL;
+  if (envUrl && !envUrl.includes('localhost')) return envUrl;
+  
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    return `http://${window.location.hostname}:5006`;
+  }
+  return envUrl || 'http://localhost:5006';
+};
+
+const SOCKET_URL = getBaseUrl();
 
 export function useSocket() {
   const socketRef = useRef(null);

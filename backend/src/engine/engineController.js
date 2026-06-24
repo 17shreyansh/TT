@@ -32,13 +32,12 @@ async function start() {
     } else {
       console.log('Fetching live universe from Angel API (This may take a few minutes)...');
       try {
-        const response = await fetch('https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json', {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-            'Accept': 'application/json'
-          }
+        const axios = require('axios');
+        const response = await axios.get('https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json', {
+          responseType: 'json',
+          timeout: 60000 // 60s timeout
         });
-        const fullList = await response.json();
+        const fullList = response.data;
         
         const exactSectors = {
           "RELIANCE-EQ": "Energy", "TCS-EQ": "IT", "INFY-EQ": "IT", "HDFCBANK-EQ": "Banking",

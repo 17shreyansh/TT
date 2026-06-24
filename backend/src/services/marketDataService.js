@@ -186,7 +186,10 @@ function processTick(tickData) {
     global.loggedTickPayload = true;
   }
 
-  const token = tickData.token || tickData.tk; 
+  let token = tickData.token || tickData.tk; 
+  if (typeof token === 'string') {
+    token = token.replace(/^"|"$/g, '');
+  }
   if (!token || !universeMap.has(token)) return;
 
   const state = marketState.get(token);
@@ -205,9 +208,9 @@ function processTick(tickData) {
   }  
   if (!newLtp) return;
 
-  // Sometimes Angel API returns LTP in paise (integer). If it's completely massive compared to open price, we adjust it.
-  // E.g. open is 200, LTP comes in as 20000.
-  if (state.open > 0 && newLtp > state.open * 50) {
+  // Angel API WebSocket ALWAYS returns LTP in paise for equities.
+  // We unconditionally divide by 100 to get INR.
+  if (newLtp) {
     newLtp = newLtp / 100;
   }
 
