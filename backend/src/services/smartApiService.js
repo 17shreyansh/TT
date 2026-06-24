@@ -56,25 +56,30 @@ function connectWebSocket(universe, onTick) {
     console.log('SmartAPI WebSocket Connected');
     
     // Prepare token list for subscription
-    // Mode 1: LTP
-    // Mode 2: Quote
-    // Mode 3: SnapQuote
+    // mode 1 = LTP, action 1 = Subscribe, exchangeType 1 = nse_cm, 3 = bse_cm
     
-    const tokenList = universe.map(item => ({
-      exchangeType: item.exchange === 'NSE' ? 1 : 2, 
-      tokens: [item.token]
-    }));
+    const nseTokens = universe.filter(i => i.exchange === 'NSE').map(i => String(i.token));
+    const bseTokens = universe.filter(i => i.exchange === 'BSE').map(i => String(i.token));
 
-    const request = {
-      correlationID: "scanner_dashboard",
-      action: 1, // Subscribe
-      params: {
-        mode: 1, 
-        tokenList: tokenList
-      }
-    };
+    if (nseTokens.length > 0) {
+      webSocket.fetchData({
+        correlationID: "scanner_dashboard_nse",
+        action: 1,
+        mode: 1,
+        exchangeType: 1,
+        tokens: nseTokens
+      });
+    }
 
-    webSocket.fetchData(request);
+    if (bseTokens.length > 0) {
+      webSocket.fetchData({
+        correlationID: "scanner_dashboard_bse",
+        action: 1,
+        mode: 1,
+        exchangeType: 3,
+        tokens: bseTokens
+      });
+    }
   });
 
   webSocket.on('tick', (data) => {
