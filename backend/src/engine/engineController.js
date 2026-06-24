@@ -24,12 +24,24 @@ async function start() {
         res.on('end', () => {
           try {
             const fullList = JSON.parse(data);
+            
+            const getAlphabeticalSector = (symbol) => {
+              const firstChar = symbol.charAt(0).toUpperCase();
+              if (firstChar >= 'A' && firstChar <= 'D') return 'A-D';
+              if (firstChar >= 'E' && firstChar <= 'H') return 'E-H';
+              if (firstChar >= 'I' && firstChar <= 'L') return 'I-L';
+              if (firstChar >= 'M' && firstChar <= 'P') return 'M-P';
+              if (firstChar >= 'Q' && firstChar <= 'T') return 'Q-T';
+              if (firstChar >= 'U' && firstChar <= 'Z') return 'U-Z';
+              return 'OTHER';
+            };
+
             const nseEquities = fullList
               .filter(item => item.exch_seg === 'NSE' && item.symbol.endsWith('-EQ'))
               .map(item => ({
                 symbol: item.symbol,
                 token: item.token,
-                sector: 'EQUITY', // OpenAPI doesn't provide sectors natively
+                sector: getAlphabeticalSector(item.symbol),
                 exchange: 'NSE'
               }));
             console.log(`Successfully fetched ${nseEquities.length} active NSE equity tokens.`);

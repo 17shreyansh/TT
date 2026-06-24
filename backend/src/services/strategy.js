@@ -1,25 +1,25 @@
 /**
  * Trading Strategy Module
- * Current Strategy: SMA200 + R4 + S4
+ * Current Strategy: Camarilla Breakout
  * 
- * BUY: Price > SMA200 AND Price > R4
- * SELL: Price < SMA200 AND Price < S4
+ * BUY: Price > R4
+ * SELL: Price < S4
  * 
  * Returns: 'BUY', 'SELL', or 'NONE'
  */
 
 function calculate(stockData) {
-  const { ltp, sma200, r4, s4 } = stockData;
+  const { ltp, r4, s4 } = stockData;
 
-  if (sma200 === 0 || r4 === 0 || s4 === 0 || ltp === 0) {
+  if (r4 === 0 || s4 === 0 || ltp === 0) {
     return 'NONE';
   }
 
-  if (ltp > sma200 && ltp > r4) {
+  if (ltp > r4) {
     return 'BUY';
   }
 
-  if (ltp < sma200 && ltp < s4) {
+  if (ltp < s4) {
     return 'SELL';
   }
 
