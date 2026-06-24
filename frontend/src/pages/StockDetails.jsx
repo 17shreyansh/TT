@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, Card, CardContent, Grid, Chip, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon } from '@mui/material';
 import { ArrowLeft, TrendingUp, TrendingDown, Activity, Minus } from 'lucide-react';
-import { createChart, candlestickSeries } from 'lightweight-charts';
+import { createChart, CandlestickSeries } from 'lightweight-charts';
 import useStore from '../store/useStore';
 
 export default function StockDetails() {
@@ -82,7 +82,7 @@ export default function StockDetails() {
       },
     });
 
-    const candleSeries = chart.addSeries(candlestickSeries, {
+    const candleSeries = chart.addSeries(CandlestickSeries, {
       upColor: '#26a69a',
       downColor: '#ef5350',
       borderVisible: false,
