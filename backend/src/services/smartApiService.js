@@ -18,14 +18,14 @@ async function login() {
   });
 
   try {
-    // In a real scenario, you'd generate the TOTP here using a library like `otplib`
-    // const { authenticator } = require('otplib');
-    // const totp = authenticator.generate(ANGEL_TOTP_SECRET);
-    
-    // Hardcoding a dummy totp for skeleton, needs actual integration for real trading
-    const totp = '123456'; 
+    const { TOTP } = require('totp-generator');
+    const { otp: totp } = await TOTP.generate(ANGEL_TOTP_SECRET);
 
     const session = await smartApi.generateSession(ANGEL_CLIENT_CODE, ANGEL_PASSWORD, totp);
+    
+    if (session && session.status === false) {
+      throw new Error(`SmartAPI Login Failed: ${session.message || session.errorcode}`);
+    }
     
     if (session && session.data && session.data.feedToken) {
       feedToken = session.data.feedToken;
@@ -93,7 +93,11 @@ function connectWebSocket(universe, onTick) {
 
 function disconnectWebSocket() {
   if (webSocket) {
-    webSocket.close();
+    try {
+      webSocket.close();
+    } catch (e) {
+      console.error('Handled WebSocket close error:', e.message);
+    }
   }
 }
 
