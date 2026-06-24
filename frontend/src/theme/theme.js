@@ -47,9 +47,11 @@ const theme = createTheme({
           borderRadius: 8,
           border: '1px solid rgba(255, 255, 255, 0.08)',
           backdropFilter: 'blur(10px)',
-          transition: 'border-color 0.2s ease-in-out',
+          transition: 'all 0.3s ease-in-out',
           '&:hover': {
             borderColor: 'rgba(41, 98, 255, 0.5)',
+            transform: 'translateY(-2px)',
+            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)'
           }
         }
       }

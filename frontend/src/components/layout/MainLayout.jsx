@@ -31,7 +31,8 @@ export default function MainLayout({ children }) {
               height: 8, 
               borderRadius: '50%', 
               bgcolor: engineStatus === 'RUNNING' ? 'secondary.main' : 'error.main',
-              boxShadow: engineStatus === 'RUNNING' ? '0 0 8px #00e676' : '0 0 8px #ff1744'
+              boxShadow: engineStatus === 'RUNNING' ? '0 0 8px #00e676' : '0 0 8px #ff1744',
+              animation: engineStatus === 'RUNNING' ? 'pulse 2s infinite' : 'none'
             }} />
             <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
               {engineStatus}

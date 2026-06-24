@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import useStore from '../store/useStore';
+import { getEngineStatus } from '../api';
 
 const SOCKET_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5006';
 
@@ -13,6 +14,11 @@ export function useSocket() {
   const setEngineStatus = useStore(state => state.setEngineStatus);
 
   useEffect(() => {
+    // Fetch initial engine status
+    getEngineStatus()
+      .then(res => setEngineStatus(res.status))
+      .catch(err => console.error('Failed to fetch initial engine status:', err));
+
     socketRef.current = io(SOCKET_URL);
 
     socketRef.current.on('connect', () => {
