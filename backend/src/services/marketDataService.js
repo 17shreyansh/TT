@@ -175,14 +175,34 @@ async function fetchHistoricalDataInBackground(universe, dailyFromDateStr, daily
 }
 
 function processTick(tickData) {
-  const token = tickData.token || tickData.tk; // Handle different Angel payload structures
+  if (Array.isArray(tickData)) {
+    tickData.forEach(tick => processTick(tick));
+    return;
+  }
+
+  // Debug payload once to understand the exact keys Angel is sending
+  if (!global.loggedTickPayload && tickData && (tickData.token || tickData.tk)) {
+    console.log("DEBUG: First valid tick payload:", JSON.stringify(tickData));
+    global.loggedTickPayload = true;
+  }
+
+  const token = tickData.token || tickData.tk; 
   if (!token || !universeMap.has(token)) return;
 
   const state = marketState.get(token);
   
-  // SmartAPI V2 parsed payload uses lastTradedPrice
-  let newLtp = tickData.lastTradedPrice || tickData.last_traded_price || tickData.ltp || tickData.LTP;
+  // SmartAPI V2 parsed payload uses last_traded_price
+  let newLtp = tickData.last_traded_price || tickData.lastTradedPrice || tickData.ltp || tickData.LTP;
   
+  // Try to find any price field if standard ones are missing
+  if (newLtp === undefined) {
+    if (!global.loggedMissingLtp) {
+      console.log("DEBUG: Tick missing LTP fields:", JSON.stringify(tickData));
+      global.loggedMissingLtp = true;
+    }
+    // V2 uses different keys sometimes, like `lp` or inside `best_5` etc depending on mode.
+    // Mode 1 (LTP) usually has last_traded_price.
+  }  
   if (!newLtp) return;
 
   // Sometimes Angel API returns LTP in paise (integer). If it's completely massive compared to open price, we adjust it.
