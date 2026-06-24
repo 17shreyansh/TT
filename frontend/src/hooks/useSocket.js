@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import useStore from '../store/useStore';
 
-const SOCKET_URL = 'http://localhost:5000';
+const SOCKET_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5006';
 
 export function useSocket() {
   const socketRef = useRef(null);
