@@ -1,0 +1,38 @@
+[
+  {
+    "symbol": "TCS-EQ",
+    "token": "11536",
+    "sector": "IT",
+    "exchange": "NSE"
+  },
+  {
+    "symbol": "INFY-EQ",
+    "token": "1594",
+    "sector": "IT",
+    "exchange": "NSE"
+  },
+  {
+    "symbol": "HDFCBANK-EQ",
+    "token": "1333",
+    "sector": "BANKING",
+    "exchange": "NSE"
+  },
+  {
+    "symbol": "ICICIBANK-EQ",
+    "token": "4963",
+    "sector": "BANKING",
+    "exchange": "NSE"
+  },
+  {
+    "symbol": "RELIANCE-EQ",
+    "token": "2885",
+    "sector": "ENERGY",
+    "exchange": "NSE"
+  },
+  {
+    "symbol": "MARUTI-EQ",
+    "token": "10999",
+    "sector": "AUTO",
+    "exchange": "NSE"
+  }
+]
