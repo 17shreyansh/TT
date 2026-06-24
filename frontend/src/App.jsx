@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import theme from './theme/theme';
 import { useSocket } from './hooks/useSocket';
+import useStore from './store/useStore';
+import GlobalLoader from './components/ui/GlobalLoader';
 
 import MainLayout from './components/layout/MainLayout';
 import Dashboard from './pages/Dashboard';
@@ -17,9 +19,14 @@ function App() {
   // Initialize WebSocket connection
   useSocket();
 
+  const engineStatus = useStore(state => state.engineStatus);
+  const marketDataLength = useStore(state => state.marketData.length);
+  const isLoading = engineStatus === 'RUNNING' && marketDataLength === 0;
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      {isLoading && <GlobalLoader />}
       <BrowserRouter>
         <MainLayout>
           <Routes>

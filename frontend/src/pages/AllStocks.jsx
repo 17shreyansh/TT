@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useDeferredValue } from 'react';
 import { Box, Typography, Card, CardContent, TextField, InputAdornment, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TableSortLabel, TablePagination } from '@mui/material';
 import { Search, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -26,10 +26,13 @@ export default function AllStocks() {
     return 0; // NONE
   };
 
+  const deferredMarketData = useDeferredValue(marketData);
+  const deferredSearch = useDeferredValue(search);
+
   const filteredAndSortedData = useMemo(() => {
-    let data = marketData.filter(stock => 
-      stock.symbol.toLowerCase().includes(search.toLowerCase()) ||
-      stock.sector.toLowerCase().includes(search.toLowerCase())
+    let data = deferredMarketData.filter(stock => 
+      stock.symbol.toLowerCase().includes(deferredSearch.toLowerCase()) ||
+      stock.sector.toLowerCase().includes(deferredSearch.toLowerCase())
     );
 
     data.sort((a, b) => {
@@ -49,7 +52,7 @@ export default function AllStocks() {
     });
 
     return data;
-  }, [marketData, search, order, orderBy]);
+  }, [deferredMarketData, deferredSearch, order, orderBy]);
 
   const renderSignalBadge = (signal) => {
     if (signal === 'BUY') return <Chip icon={<TrendingUp size={16} />} label="BUY" color="success" size="small" variant="outlined" />;

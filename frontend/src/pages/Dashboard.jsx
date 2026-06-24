@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useDeferredValue } from 'react';
 import { Grid, Typography, Fade, Box } from '@mui/material';
 import { Activity, Target, Layers, ArrowUpCircle, ArrowDownCircle, Wifi } from 'lucide-react';
 import StatCard from '../components/ui/StatCard';
@@ -9,9 +9,10 @@ export default function Dashboard() {
   const totalScanned = useStore(state => state.getTotalScanned());
   const activeSignals = useStore(state => state.getActiveSignalsCount());
   const sectors = useStore(state => state.sectors);
+  const deferredSectors = useDeferredValue(sectors);
 
-  const strongestSector = sectors.length > 0 ? sectors[0] : null;
-  const weakestSector = sectors.length > 0 ? sectors[sectors.length - 1] : null;
+  const strongestSector = deferredSectors.length > 0 ? deferredSectors[0] : null;
+  const weakestSector = deferredSectors.length > 0 ? deferredSectors[deferredSectors.length - 1] : null;
 
   return (
     <Fade in={true} timeout={800}>
