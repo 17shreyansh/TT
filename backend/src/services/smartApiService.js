@@ -78,15 +78,9 @@ function connectWebSocket(universe, onTick) {
         webSocket.fetchData({
           correlationID: `${prefix}_${i}`,
           action: ACTION.Subscribe,
-          params: {
-            mode: MODE.LTP,
-            tokenList: [
-              {
-                exchangeType: exchangeType,
-                tokens: chunk
-              }
-            ]
-          }
+          mode: MODE.LTP,
+          exchangeType: exchangeType,
+          tokens: chunk
         });
         // Wait 200ms between subscriptions to avoid AngelOne WebSocket rate limits
         await new Promise(r => setTimeout(r, 200));
