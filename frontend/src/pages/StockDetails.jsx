@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, Card, CardContent, Grid, Chip, IconButton, Divider, List, ListItem, ListItemText, ListItemIcon } from '@mui/material';
 import { ArrowLeft, TrendingUp, TrendingDown, Activity, Minus } from 'lucide-react';
-import { createChart } from 'lightweight-charts';
+import { createChart, candlestickSeries } from 'lightweight-charts';
 import useStore from '../store/useStore';
 
 export default function StockDetails() {
@@ -82,7 +82,7 @@ export default function StockDetails() {
       },
     });
 
-    const candlestickSeries = chart.addCandlestickSeries({
+    const candleSeries = chart.addSeries(candlestickSeries, {
       upColor: '#26a69a',
       downColor: '#ef5350',
       borderVisible: false,
@@ -93,18 +93,18 @@ export default function StockDetails() {
     // Add strategy lines
     if (stock) {
       if (stock.sma200 > 0) {
-        candlestickSeries.createPriceLine({ price: stock.sma200, color: '#ffc658', lineWidth: 2, lineStyle: 2, axisLabelVisible: true, title: 'SMA 200' });
+        candleSeries.createPriceLine({ price: stock.sma200, color: '#ffc658', lineWidth: 2, lineStyle: 2, axisLabelVisible: true, title: 'SMA 200' });
       }
       if (stock.r4 > 0) {
-        candlestickSeries.createPriceLine({ price: stock.r4, color: '#82ca9d', lineWidth: 2, lineStyle: 2, axisLabelVisible: true, title: 'R4' });
+        candleSeries.createPriceLine({ price: stock.r4, color: '#82ca9d', lineWidth: 2, lineStyle: 2, axisLabelVisible: true, title: 'R4' });
       }
       if (stock.s4 > 0) {
-        candlestickSeries.createPriceLine({ price: stock.s4, color: '#ff7300', lineWidth: 2, lineStyle: 2, axisLabelVisible: true, title: 'S4' });
+        candleSeries.createPriceLine({ price: stock.s4, color: '#ff7300', lineWidth: 2, lineStyle: 2, axisLabelVisible: true, title: 'S4' });
       }
     }
 
     chartInstance.current = chart;
-    seriesInstance.current = candlestickSeries;
+    seriesInstance.current = candleSeries;
 
     const handleResize = () => {
       if (chartContainerRef.current) {

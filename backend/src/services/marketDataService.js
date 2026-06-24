@@ -9,6 +9,10 @@ const path = require('path');
 let universeMap = new Map(); // token -> universe details
 let marketState = new Map(); // token -> { ltp, open, high, low, close, volume, changePercent, sma200, r4, s4, signal }
 
+// Throttling state
+let lastEmitTime = 0;
+let emitTimeout = null;
+
 function formatAngelDate(date) {
   const pad = (n) => n.toString().padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
@@ -255,9 +259,20 @@ function processTick(tickData) {
   // Update sector calculation
   sectorCalculator.updateSector(state);
 
-  // Throttle emissions in a real production app. For now, emit immediately.
-  emitMarketUpdate(Array.from(marketState.values()));
-  emitSectorUpdate(sectorCalculator.getSectors());
+  // Throttle emissions to avoid WebSocket flooding
+  const now = Date.now();
+  if (now - lastEmitTime >= 500) {
+    emitMarketUpdate(Array.from(marketState.values()));
+    emitSectorUpdate(sectorCalculator.getSectors());
+    lastEmitTime = now;
+  } else if (!emitTimeout) {
+    emitTimeout = setTimeout(() => {
+      emitMarketUpdate(Array.from(marketState.values()));
+      emitSectorUpdate(sectorCalculator.getSectors());
+      lastEmitTime = Date.now();
+      emitTimeout = null;
+    }, 500 - (now - lastEmitTime));
+  }
   
   if (signalChanged && newSignal !== 'NONE') {
     emitSignalUpdate({
