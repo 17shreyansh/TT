@@ -49,7 +49,7 @@ function connectWebSocket(universe, onTick) {
     jwttoken: smartApi.access_token,
     apikey: smartApi.api_key,
     clientcode: ANGEL_CLIENT_CODE,
-    feedtoken: feedToken
+    feedtype: feedToken
   });
 
   webSocket.connect().then(() => {
