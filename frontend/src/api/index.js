@@ -31,3 +31,8 @@ export const restartEngine = async () => {
   const res = await axios.post(`${API_URL}/engine/restart`);
   return res.data;
 };
+
+export const getHistoricalData = async (symbol) => {
+  const res = await axios.get(`${API_URL}/history/${encodeURIComponent(symbol)}`);
+  return res.data;
+};

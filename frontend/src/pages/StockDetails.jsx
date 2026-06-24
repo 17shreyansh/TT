@@ -4,6 +4,7 @@ import { Box, Typography, Card, CardContent, Grid, Chip, IconButton, Divider, Li
 import { ArrowLeft, TrendingUp, TrendingDown, Activity, Minus } from 'lucide-react';
 import { createChart, CandlestickSeries } from 'lightweight-charts';
 import useStore from '../store/useStore';
+import { getHistoricalData } from '../api';
 
 export default function StockDetails() {
   const { symbol } = useParams();
@@ -17,44 +18,60 @@ export default function StockDetails() {
   const chartInstance = useRef(null);
   const seriesInstance = useRef(null);
   
-  const [candleData, setCandleData] = useState([]);
+  const historicalLoaded = useRef(false);
+  const lastCandleRef = useRef(null);
 
-  // Intraday 1-minute aggregation
+  // Load Historical Data
   useEffect(() => {
-    if (stock && stock.ltp > 0) {
+    let active = true;
+    historicalLoaded.current = false;
+    getHistoricalData(symbol).then(res => {
+      if (active && res.success && res.data && seriesInstance.current) {
+        const validData = [...res.data].sort((a, b) => a.time - b.time);
+        seriesInstance.current.setData(validData);
+        if (validData.length > 0) {
+          lastCandleRef.current = validData[validData.length - 1];
+        }
+        historicalLoaded.current = true;
+      }
+    });
+    return () => { active = false; };
+  }, [symbol]);
+
+  // Intraday 1-minute aggregation for live ticks
+  useEffect(() => {
+    if (stock && stock.ltp > 0 && historicalLoaded.current && seriesInstance.current) {
       const now = new Date();
       // Unix timestamp in seconds for lightweight-charts (rounded to nearest minute)
       const minuteTime = Math.floor(now.getTime() / 60000) * 60; 
 
-      setCandleData(prev => {
-        const lastCandle = prev.length > 0 ? prev[prev.length - 1] : null;
+      const lastCandle = lastCandleRef.current;
+      let newCandle;
 
-        if (!lastCandle || lastCandle.time !== minuteTime) {
-          const newCandle = {
-            time: minuteTime,
-            open: stock.ltp,
-            high: stock.ltp,
-            low: stock.ltp,
-            close: stock.ltp
-          };
-          // Initialize open from the backend if this is the very first minute we observe it today
-          if (prev.length === 0 && stock.open > 0) {
-              newCandle.open = stock.open;
-          }
-          return [...prev, newCandle];
-        } else {
-          if (lastCandle.close === stock.ltp && lastCandle.high >= stock.ltp && lastCandle.low <= stock.ltp) {
-            return prev; // No visual change needed
-          }
-          const updatedCandles = [...prev];
-          const updatedCandle = { ...lastCandle };
-          updatedCandle.high = Math.max(updatedCandle.high, stock.ltp);
-          updatedCandle.low = Math.min(updatedCandle.low, stock.ltp);
-          updatedCandle.close = stock.ltp;
-          updatedCandles[updatedCandles.length - 1] = updatedCandle;
-          return updatedCandles;
+      if (!lastCandle || lastCandle.time !== minuteTime) {
+        newCandle = {
+          time: minuteTime,
+          open: stock.ltp,
+          high: stock.ltp,
+          low: stock.ltp,
+          close: stock.ltp
+        };
+        // Initialize open from the backend if this is the very first minute we observe it today and no history
+        if (!lastCandle && stock.open > 0) {
+            newCandle.open = stock.open;
         }
-      });
+      } else {
+        if (lastCandle.close === stock.ltp && lastCandle.high >= stock.ltp && lastCandle.low <= stock.ltp) {
+          return; // No visual change needed
+        }
+        newCandle = { ...lastCandle };
+        newCandle.high = Math.max(newCandle.high, stock.ltp);
+        newCandle.low = Math.min(newCandle.low, stock.ltp);
+        newCandle.close = stock.ltp;
+      }
+
+      lastCandleRef.current = newCandle;
+      seriesInstance.current.update(newCandle);
     }
   }, [stock?.ltp]);
 
@@ -119,14 +136,7 @@ export default function StockDetails() {
     };
   }, []); // Run once on mount
 
-  // Update chart data
-  useEffect(() => {
-    if (seriesInstance.current && candleData.length > 0) {
-      // Sort and deduplicate times just in case to avoid lightweight-charts errors
-      const validData = [...candleData].sort((a, b) => a.time - b.time);
-      seriesInstance.current.setData(validData);
-    }
-  }, [candleData]);
+  // The seriesInstance handles chart data now without a react dependency loop
 
 
   const stockSignals = useMemo(() => {

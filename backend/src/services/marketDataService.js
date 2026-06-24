@@ -300,9 +300,25 @@ function getMarketState() {
   return Array.from(marketState.values());
 }
 
+function getTokenBySymbol(symbol) {
+  for (const [token, details] of universeMap.entries()) {
+    // Exact match or partial match (ignoring -EQ)
+    if (details.symbol === symbol || details.symbol === `${symbol}-EQ`) {
+      return token;
+    }
+  }
+  return null;
+}
+
+function getUniverseDetails(token) {
+  return universeMap.get(token);
+}
+
 module.exports = {
   init,
   processTick,
   clear,
-  getMarketState
+  getMarketState,
+  getTokenBySymbol,
+  getUniverseDetails
 };
