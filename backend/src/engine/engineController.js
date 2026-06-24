@@ -75,17 +75,17 @@ async function start() {
     });
     
     // 3. Initialize Market Data Service
-    emitEngineUpdate('INITIALIZING');
-    await marketDataService.init(universe);
+    // Run async, do not block the WebSocket connection
+    marketDataService.init(universe).catch(err => console.error("Historical fetch error:", err));
     
-    // 4. Subscribe to WebSockets
+    // 4. Subscribe to WebSockets instantly
     smartApiService.connectWebSocket(universe, (tickData) => {
       marketDataService.processTick(tickData);
     });
     
     isRunning = true;
     emitEngineUpdate('RUNNING');
-    console.log('Engine started successfully');
+    console.log('Engine started successfully. Historical data fetching in background if not cached.');
   } catch (error) {
     console.error('Failed to start engine:', error);
     isRunning = false;

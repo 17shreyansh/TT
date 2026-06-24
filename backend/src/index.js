@@ -27,13 +27,10 @@ app.get('/api/engine/status', (req, res) => {
   res.json({ status: engineController.getStatus() });
 });
 
-app.post('/api/engine/start', (req, res) => {
+app.post('/api/engine/start', async (req, res) => {
   try {
-    // Start async without awaiting so browser doesn't timeout during 13-minute historical fetch
-    engineController.start().catch(err => {
-      console.error('Engine start failed in background:', err);
-    });
-    res.json({ success: true, status: 'INITIALIZING' });
+    await engineController.start();
+    res.json({ success: true, status: engineController.getStatus() });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

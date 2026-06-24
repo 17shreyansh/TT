@@ -2,6 +2,8 @@ const sectorCalculator = require('./sectorCalculator');
 const strategy = require('./strategy');
 const { emitMarketUpdate, emitSectorUpdate, emitSignalUpdate } = require('../socket/socketLayer');
 const smartApiService = require('./smartApiService');
+const fs = require('fs');
+const path = require('path');
 
 // State maps
 let universeMap = new Map(); // token -> universe details
@@ -50,11 +52,41 @@ async function init(universe) {
 
   emitMarketState();
   
-  // Wait for all historical data to finish before starting engine
-  await fetchHistoricalDataInBackground(universe, dailyFromDateStr, dailyToDateStr, min15FromDateStr);
+  // Do not wait for historical data, let it run in background to instantly unblock WebSocket
 }
 
 async function fetchHistoricalDataInBackground(universe, dailyFromDateStr, dailyToDateStr, min15FromDateStr) {
+  const cacheDir = path.join(__dirname, '../../cache');
+  if (!fs.existsSync(cacheDir)) {
+    fs.mkdirSync(cacheDir, { recursive: true });
+  }
+
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const cacheFile = path.join(cacheDir, `historical_data_${todayStr}.json`);
+
+  if (fs.existsSync(cacheFile)) {
+    console.log(`Daily cache found for ${todayStr}. Loading instantly...`);
+    try {
+      const cachedData = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
+      for (const item of cachedData) {
+        const state = marketState.get(item.token);
+        if (state) {
+          state.sma200 = item.sma200;
+          state.r4 = item.r4;
+          state.s4 = item.s4;
+          // Note: we don't overwrite ltp if it's 0 because live socket will populate it, 
+          // or we can just leave it as 0. 
+        }
+      }
+      emitMarketState();
+      console.log('Daily cache loaded in 0.1 seconds!');
+      return;
+    } catch (e) {
+      console.error('Failed to read cache, falling back to API fetch...', e);
+    }
+  }
+
   console.log(`Starting background historical fetch for ${universe.length} tokens...`);
   let count = 0;
   for (const item of universe) {
@@ -124,8 +156,21 @@ async function fetchHistoricalDataInBackground(universe, dailyFromDateStr, daily
     }
   }
   
+  // Save cache after successful fetch
+  try {
+    const cacheToSave = Array.from(marketState.values()).map(s => ({
+      token: s.token,
+      sma200: s.sma200,
+      r4: s.r4,
+      s4: s.s4
+    }));
+    fs.writeFileSync(cacheFile, JSON.stringify(cacheToSave), 'utf8');
+    console.log(`Background historical fetch completed. Saved cache to ${cacheFile}`);
+  } catch (err) {
+    console.error('Failed to save daily cache:', err);
+  }
+  
   emitMarketState();
-  console.log('Background historical fetch completed.');
 }
 
 function processTick(tickData) {
