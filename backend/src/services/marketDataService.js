@@ -84,7 +84,7 @@ async function init(universe) {
       console.error(`Error fetching historical data for ${item.symbol}:`, err.message || err);
     }
 
-    marketState.set(item.token, {
+    const initialState = {
       symbol: item.symbol,
       sector: item.sector,
       token: item.token,
@@ -97,7 +97,29 @@ async function init(universe) {
       s4: s4,
       signal: 'NONE',
       signalTime: null
-    });
+    };
+
+    // Calculate signal from historical data
+    const initialSignal = strategy.calculate(initialState);
+    if (initialSignal !== 'NONE') {
+      initialState.signal = initialSignal;
+      initialState.signalTime = new Date().toISOString();
+      
+      // Emit signal immediately for the frontend
+      emitSignalUpdate({
+        symbol: initialState.symbol,
+        sector: initialState.sector,
+        signal: initialState.signal,
+        price: initialState.ltp,
+        changePercent: initialState.changePercent,
+        time: initialState.signalTime
+      });
+    }
+
+    marketState.set(item.token, initialState);
+    
+    // Ensure the sector data is updated with this initial signal
+    sectorCalculator.updateSector(initialState);
   }
 
   emitMarketState();
