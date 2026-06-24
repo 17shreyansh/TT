@@ -54,6 +54,7 @@ async function start() {
     });
     
     // 3. Initialize Market Data Service
+    emitEngineUpdate('INITIALIZING');
     await marketDataService.init(universe);
     
     // 4. Subscribe to WebSockets

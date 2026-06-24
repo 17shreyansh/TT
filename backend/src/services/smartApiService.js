@@ -61,24 +61,27 @@ function connectWebSocket(universe, onTick) {
     const nseTokens = universe.filter(i => i.exchange === 'NSE').map(i => String(i.token));
     const bseTokens = universe.filter(i => i.exchange === 'BSE').map(i => String(i.token));
 
+    const CHUNK_SIZE = 50;
+
+    const subscribeTokens = (tokens, exchangeType, prefix) => {
+      for (let i = 0; i < tokens.length; i += CHUNK_SIZE) {
+        const chunk = tokens.slice(i, i + CHUNK_SIZE);
+        webSocket.fetchData({
+          correlationID: `${prefix}_${i}`,
+          action: 1,
+          mode: 1, // 1 = LTP
+          exchangeType: exchangeType, // 1 = NSE, 3 = BSE
+          tokens: chunk
+        });
+      }
+    };
+
     if (nseTokens.length > 0) {
-      webSocket.fetchData({
-        correlationID: "scanner_dashboard_nse",
-        action: 1,
-        mode: 1,
-        exchangeType: 1,
-        tokens: nseTokens
-      });
+      subscribeTokens(nseTokens, 1, 'scanner_dashboard_nse');
     }
 
     if (bseTokens.length > 0) {
-      webSocket.fetchData({
-        correlationID: "scanner_dashboard_bse",
-        action: 1,
-        mode: 1,
-        exchangeType: 3,
-        tokens: bseTokens
-      });
+      subscribeTokens(bseTokens, 3, 'scanner_dashboard_bse');
     }
   });
 

@@ -50,8 +50,8 @@ async function init(universe) {
 
   emitMarketState();
   
-  // Start background fetching async (do not await)
-  fetchHistoricalDataInBackground(universe, dailyFromDateStr, dailyToDateStr, min15FromDateStr);
+  // Wait for all historical data to finish before starting engine
+  await fetchHistoricalDataInBackground(universe, dailyFromDateStr, dailyToDateStr, min15FromDateStr);
 }
 
 async function fetchHistoricalDataInBackground(universe, dailyFromDateStr, dailyToDateStr, min15FromDateStr) {
