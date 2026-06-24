@@ -21,6 +21,7 @@ export function useSocket() {
   const setMarketData = useStore(state => state.setMarketData);
   const setSectors = useStore(state => state.setSectors);
   const addSignal = useStore(state => state.addSignal);
+  const setSignals = useStore(state => state.setSignals);
   const setEngineStatus = useStore(state => state.setEngineStatus);
 
   useEffect(() => {
@@ -47,6 +48,12 @@ export function useSocket() {
       addSignal(data);
     });
 
+    socketRef.current.on('signals_history', (data) => {
+      // The backend pushes historically, so the newest is at the end of the array.
+      // We want the newest at the top of the UI, so we reverse it.
+      setSignals(data.reverse());
+    });
+
     socketRef.current.on('engine_update', (status) => {
       setEngineStatus(status);
     });
@@ -54,7 +61,7 @@ export function useSocket() {
     return () => {
       socketRef.current.disconnect();
     };
-  }, [setMarketData, setSectors, addSignal, setEngineStatus]);
+  }, [setMarketData, setSectors, addSignal, setSignals, setEngineStatus]);
 
   return socketRef.current;
 }

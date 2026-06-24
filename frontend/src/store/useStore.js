@@ -16,6 +16,7 @@ const useStore = create((set, get) => ({
     const newSignals = [signalData, ...state.signals].slice(0, 5000);
     return { signals: newSignals };
   }),
+  setSignals: (data) => set({ signals: data }),
   
   setEngineStatus: (status) => set({ engineStatus: status }),
 

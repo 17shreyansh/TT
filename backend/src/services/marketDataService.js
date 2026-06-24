@@ -13,6 +13,8 @@ let marketState = new Map(); // token -> { ltp, open, high, low, close, volume, 
 let lastEmitTime = 0;
 let emitTimeout = null;
 
+let signalsHistory = [];
+
 function formatAngelDate(date) {
   const pad = (n) => n.toString().padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
@@ -21,6 +23,7 @@ function formatAngelDate(date) {
 async function init(universe) {
   universeMap.clear();
   marketState.clear();
+  signalsHistory = [];
   sectorCalculator.init(universe);
 
   const now = new Date();
@@ -275,19 +278,24 @@ function processTick(tickData) {
   }
   
   if (signalChanged && newSignal !== 'NONE') {
-    emitSignalUpdate({
+    const sig = {
       symbol: state.symbol,
       sector: state.sector,
       signal: state.signal,
       price: state.ltp,
       changePercent: state.changePercent,
       time: state.signalTime
-    });
+    };
+    signalsHistory.push(sig);
+    if (signalsHistory.length > 5000) signalsHistory.shift();
+    
+    emitSignalUpdate(sig);
   }
 }
 
 function clear() {
   marketState.clear();
+  signalsHistory = [];
   sectorCalculator.clear();
 }
 
@@ -320,5 +328,6 @@ module.exports = {
   clear,
   getMarketState,
   getTokenBySymbol,
-  getUniverseDetails
+  getUniverseDetails,
+  getSignalsHistory: () => signalsHistory
 };

@@ -18,19 +18,7 @@ function initSocket(io) {
       const state = marketDataService.getMarketState();
       socket.emit('market_update', state);
       socket.emit('sector_update', sectorCalculator.getSectors());
-      
-      state.forEach(s => {
-        if (s.signal !== 'NONE') {
-          socket.emit('signal_update', {
-            symbol: s.symbol,
-            sector: s.sector,
-            signal: s.signal,
-            price: s.ltp,
-            changePercent: s.changePercent,
-            time: s.signalTime
-          });
-        }
-      });
+      socket.emit('signals_history', marketDataService.getSignalsHistory());
     }
     
     socket.on('disconnect', () => {
