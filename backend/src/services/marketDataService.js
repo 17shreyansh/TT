@@ -58,6 +58,7 @@ async function fetchHistoricalDataInBackground(universe, dailyFromDateStr, daily
   console.log(`Starting background historical fetch for ${universe.length} tokens...`);
   let count = 0;
   for (const item of universe) {
+    let sma200 = 0;
     let r4 = 0;
     let s4 = 0;
     let lastClose = marketState.get(item.token)?.ltp || 0;
@@ -67,12 +68,21 @@ async function fetchHistoricalDataInBackground(universe, dailyFromDateStr, daily
         exchange: item.exchange === 'NSE' ? 'NSE' : 'BSE',
         symboltoken: item.token,
         interval: 'ONE_DAY',
-        fromdate: min15FromDateStr, // 3 days ago is enough to get yesterday's candle
+        fromdate: dailyFromDateStr, // 300 days ago to get SMA200
         todate: dailyToDateStr
       });
 
       if (dailyData && dailyData.data && dailyData.data.length >= 2) {
         const candles = dailyData.data;
+        
+        // Calculate SMA200
+        const last200 = candles.slice(-200);
+        if (last200.length > 0) {
+          const sum = last200.reduce((acc, candle) => acc + candle[4], 0);
+          sma200 = sum / last200.length;
+        }
+
+        // Calculate Camarilla R4/S4 from yesterday
         const yesterdayCandle = candles[candles.length - 2];
         const high = yesterdayCandle[2];
         const low = yesterdayCandle[3];
@@ -96,6 +106,7 @@ async function fetchHistoricalDataInBackground(universe, dailyFromDateStr, daily
     if (!state) continue;
 
     // Update state with background historical data
+    state.sma200 = sma200;
     state.r4 = r4;
     state.s4 = s4;
     if (state.ltp === 0) {
