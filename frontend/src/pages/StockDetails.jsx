@@ -80,9 +80,9 @@ export default function StockDetails() {
           <Card sx={{ borderRadius: 3, height: '100%' }}>
             <CardContent>
               <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Live Chart (LTP: ₹{stock.ltp.toFixed(2)})</span>
-                <span style={{ color: stock.changePercent >= 0 ? '#4caf50' : '#f44336' }}>
-                  {stock.changePercent > 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
+                <span>Live Chart (LTP: ₹{(stock.ltp || 0).toFixed(2)})</span>
+                <span style={{ color: (stock.changePercent || 0) >= 0 ? '#4caf50' : '#f44336' }}>
+                  {(stock.changePercent || 0) > 0 ? '+' : ''}{(stock.changePercent || 0).toFixed(2)}%
                 </span>
               </Typography>
               
@@ -137,19 +137,19 @@ export default function StockDetails() {
                   <Typography variant="h6" fontWeight="bold" gutterBottom>Metrics</Typography>
                   <List dense>
                     <ListItem>
-                      <ListItemText primary="Open Price" secondary={`₹${stock.open.toFixed(2)}`} />
+                      <ListItemText primary="Open Price" secondary={`₹${(stock.open || 0).toFixed(2)}`} />
                     </ListItem>
                     <Divider />
                     <ListItem>
-                      <ListItemText primary="SMA 200" secondary={`₹${stock.sma200.toFixed(2)}`} />
+                      <ListItemText primary="SMA 200" secondary={`₹${(stock.sma200 || 0).toFixed(2)}`} />
                     </ListItem>
                     <Divider />
                     <ListItem>
-                      <ListItemText primary="Resistance (R4)" secondary={`₹${stock.r4.toFixed(2)}`} />
+                      <ListItemText primary="Resistance (R4)" secondary={`₹${(stock.r4 || 0).toFixed(2)}`} />
                     </ListItem>
                     <Divider />
                     <ListItem>
-                      <ListItemText primary="Support (S4)" secondary={`₹${stock.s4.toFixed(2)}`} />
+                      <ListItemText primary="Support (S4)" secondary={`₹${(stock.s4 || 0).toFixed(2)}`} />
                     </ListItem>
                   </List>
                 </CardContent>
@@ -185,7 +185,7 @@ export default function StockDetails() {
                               secondary={
                                 <>
                                   <Typography variant="body2" component="span" display="block">
-                                    Triggered at ₹{sig.price.toFixed(2)}
+                                    Triggered at ₹{(sig.price || 0).toFixed(2)}
                                   </Typography>
                                   <Typography variant="caption" color="text.secondary">
                                     {new Date(sig.time).toLocaleTimeString()}

@@ -131,13 +131,13 @@ export default function AllStocks() {
                   <Chip label={stock.sector} size="small" sx={{ bgcolor: 'action.hover' }} />
                 </TableCell>
                 <TableCell align="right" sx={{ fontWeight: 'medium' }}>
-                  ₹{stock.ltp.toFixed(2)}
+                  ₹{(stock.ltp || 0).toFixed(2)}
                 </TableCell>
-                <TableCell align="right" sx={{ color: stock.changePercent >= 0 ? 'success.main' : 'error.main', fontWeight: 'bold' }}>
-                  {stock.changePercent > 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
+                <TableCell align="right" sx={{ color: (stock.changePercent || 0) >= 0 ? 'success.main' : 'error.main', fontWeight: 'bold' }}>
+                  {(stock.changePercent || 0) > 0 ? '+' : ''}{(stock.changePercent || 0).toFixed(2)}%
                 </TableCell>
                 <TableCell align="right" sx={{ color: 'text.secondary' }}>
-                  ₹{stock.sma200.toFixed(2)}
+                  ₹{(stock.sma200 || 0).toFixed(2)}
                 </TableCell>
                 <TableCell align="center">
                   {renderSignalBadge(stock.signal)}

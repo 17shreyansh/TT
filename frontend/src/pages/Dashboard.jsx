@@ -55,7 +55,7 @@ export default function Dashboard() {
             <StatCard 
               title="Strongest Sector" 
               value={strongestSector ? strongestSector.name : 'Awaiting Data'} 
-              subtitle={strongestSector ? `+${strongestSector.movementPercent.toFixed(2)}% Average Movement` : 'Start the engine to receive data'}
+              subtitle={strongestSector ? `+${(strongestSector.movementPercent || 0).toFixed(2)}% Average Movement` : 'Start the engine to receive data'}
               icon={<ArrowUpCircle size={24} />} 
               valueColor="secondary.main"
             />
@@ -64,7 +64,7 @@ export default function Dashboard() {
             <StatCard 
               title="Weakest Sector" 
               value={weakestSector ? weakestSector.name : 'Awaiting Data'} 
-              subtitle={weakestSector ? `${weakestSector.movementPercent.toFixed(2)}% Average Movement` : 'Start the engine to receive data'}
+              subtitle={weakestSector ? `${(weakestSector.movementPercent || 0).toFixed(2)}% Average Movement` : 'Start the engine to receive data'}
               icon={<ArrowDownCircle size={24} />} 
               valueColor="error.main"
             />

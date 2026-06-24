@@ -33,8 +33,8 @@ export default function SectorStrength() {
                   <Typography fontWeight={600}>{sector.name}</Typography>
                 </TableCell>
                 <TableCell align="right">
-                  <Typography color={sector.movementPercent >= 0 ? 'secondary.main' : 'error.main'} fontWeight={600}>
-                    {sector.movementPercent > 0 ? '+' : ''}{sector.movementPercent.toFixed(2)}%
+                  <Typography color={(sector.movementPercent || 0) >= 0 ? 'secondary.main' : 'error.main'} fontWeight={600}>
+                    {(sector.movementPercent || 0) > 0 ? '+' : ''}{(sector.movementPercent || 0).toFixed(2)}%
                   </Typography>
                 </TableCell>
                 <TableCell align="right">{sector.totalStocks}</TableCell>

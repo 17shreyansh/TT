@@ -25,7 +25,7 @@ export default function SectorDetails() {
 
       {sectorInfo && (
         <Box sx={{ display: 'flex', gap: 3, mb: 3 }}>
-          <Chip label={`Movement: ${sectorInfo.movementPercent > 0 ? '+' : ''}${sectorInfo.movementPercent.toFixed(2)}%`} color={sectorInfo.movementPercent >= 0 ? 'secondary' : 'error'} />
+          <Chip label={`Movement: ${(sectorInfo.movementPercent || 0) > 0 ? '+' : ''}{(sectorInfo.movementPercent || 0).toFixed(2)}%`} color={(sectorInfo.movementPercent || 0) >= 0 ? 'secondary' : 'error'} />
           <Chip label={`Total Stocks: ${sectorInfo.totalStocks}`} variant="outlined" />
           <Chip label={`Active Signals: ${sectorInfo.activeSignals}`} color="primary" />
         </Box>
@@ -51,16 +51,16 @@ export default function SectorDetails() {
                 <TableCell component="th" scope="row">
                   <Typography fontWeight={600}>{stock.symbol}</Typography>
                 </TableCell>
-                <TableCell align="right">{stock.ltp.toFixed(2)}</TableCell>
+                <TableCell align="right">{(stock.ltp || 0).toFixed(2)}</TableCell>
                 <TableCell align="right">
-                  <Typography color={stock.changePercent >= 0 ? 'secondary.main' : 'error.main'}>
-                    {stock.changePercent > 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
+                  <Typography color={(stock.changePercent || 0) >= 0 ? 'secondary.main' : 'error.main'}>
+                    {(stock.changePercent || 0) > 0 ? '+' : ''}{(stock.changePercent || 0).toFixed(2)}%
                   </Typography>
                 </TableCell>
                 <TableCell align="right">{stock.volume}</TableCell>
-                <TableCell align="right">{stock.sma200.toFixed(2)}</TableCell>
-                <TableCell align="right">{stock.r4.toFixed(2)}</TableCell>
-                <TableCell align="right">{stock.s4.toFixed(2)}</TableCell>
+                <TableCell align="right">{(stock.sma200 || 0).toFixed(2)}</TableCell>
+                <TableCell align="right">{(stock.r4 || 0).toFixed(2)}</TableCell>
+                <TableCell align="right">{(stock.s4 || 0).toFixed(2)}</TableCell>
                 <TableCell align="center">
                   {stock.signal === 'BUY' && <Chip label="BUY" color="secondary" size="small" sx={{ fontWeight: 600 }} />}
                   {stock.signal === 'SELL' && <Chip label="SELL" color="error" size="small" sx={{ fontWeight: 600 }} />}
